@@ -25,14 +25,65 @@ import socketserver
 # run: python freetests.py
 
 # try: curl -v -X GET http://127.0.0.1:8080/
-
+import os
 
 class MyWebServer(socketserver.BaseRequestHandler):
-    
+    base = "www"
+    response = ""
+    data = ""
+
+
+                # if fullPath[-1] != "/":
+                #     self.response = "HTTP/1.1 301 Moved permanently\r\ncontent-type: text/html\r\nlocation: http://127.0.0.1:8080/" + path + "\r\n"
+                #     #test_deep_no_end
+                #     self.request.sendall(bytearray(self.response,'utf-8'))
     def handle(self):
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+        print ("\nGot a request of: %s\n" % self.data)
+
+        byteToString = str(self.data, "utf-8")
+        dataSplit = byteToString.split("\r\n")
+        requestData = dataSplit[0].split(" ")
+        request = requestData[0]
+        path = requestData[1]
+        fullPath = self.base + path
+
+        if request == "GET":
+            fullPath = self.base + path
+            if os.path.isdir(fullPath):
+                header = "HTTP/1.1 200 OK\r\ncontent-type: text/html\r\n\r\n"
+                with open(fullPath + ("" if fullPath[-1] == "/" else "/") + "index.html") as f:
+                    data = f.read()
+                    self.response = header + data
+                    print("HELLO\n" * 5)
+                
+            elif os.path.exists(fullPath):
+                if ".html" in fullPath or path == "/":
+                    header = "HTTP/1.1 200 OK\r\ncontent-type: text/html\r\n\r\n"
+                    if path == "/":
+                        fullPath = self.base + "/index.html"
+                #will i access other files?
+                elif ".css" in fullPath:
+                    header = "HTTP/1.1 200 OK\r\ncontent-type: text/css\r\n\r\n"
+                else:
+                    print("hello\n" * 5)
+                    self.response = "HTTP/1.1 404 PAGE NOT FOUND\r\ncontent-type: text/html\r\n\r\n"
+                    self.request.sendall(bytearray(self.response,'utf-8'))
+                    return 
+                with open(fullPath, "r") as f:
+                    data = f.read()
+                
+                self.response = header + data
+                print(self.response)
+            else:
+                self.response = "HTTP/1.1 404 PAGE NOT FOUND\r\ncontent-type: text/html\r\n\r\n"
+        else:
+            self.response = "HTTP/1.1 405 Method Not Allowed\r\ncontent-type: text/html\r\n\r\n"
+
+        # for i in dataSplit:
+        #     print(i)
+        # print(self.response)
+        self.request.sendall(bytearray(self.response,'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080

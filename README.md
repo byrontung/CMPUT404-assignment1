@@ -24,3 +24,4 @@ examples thus some of the code is Copyright © 2001-2013 Python
 Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301#:~:text=The%20HyperText%20Transfer%20Protocol%20(HTTP,their%20links%20to%20the%20resource.
